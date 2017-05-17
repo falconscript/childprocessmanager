@@ -1,9 +1,18 @@
 {
   "name": "childprocessmanager",
   "private": false,
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "ES6 JS class to spawn and manage external processes",
-  "keywords": ["Child process", "fork", "spawn", "exec", "execute", "system", "execv", "ChildProcessManager" ],
+  "keywords": [
+    "Child process",
+    "fork",
+    "spawn",
+    "exec",
+    "execute",
+    "system",
+    "execv",
+    "ChildProcessManager"
+  ],
   "dependencies": {
     "ps-node": "*"
   },
@@ -12,5 +21,3 @@
     "url": "git://github.com/falconscript/childprocessmanager"
   }
 }
-
-
