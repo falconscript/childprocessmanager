@@ -1,12 +1,11 @@
 {
   "name": "childprocessmanager",
   "private": false,
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "ES6 JS class to spawn and manage external processes",
   "keywords": ["Child process", "fork", "spawn", "exec", "execute", "system", "execv", "ChildProcessManager" ],
   "dependencies": {
-    "ps-node": "*",
-    "line-reader": "*"
+    "ps-node": "*"
   },
   "repository": {
     "type": "git",

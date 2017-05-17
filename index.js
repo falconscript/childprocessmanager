@@ -7,7 +7,6 @@
  */
 
 var ps = require('ps-node'),
-    lineReader = require('line-reader'),
     spawn = require('child_process').spawn;
 
 var DIE = function() {
@@ -17,6 +16,16 @@ var DIE = function() {
     process.exit(0);
 };
 
+
+// https://nodejs.org/api/child_process.html#child_process_options_detached
+// On Windows, setting options.detached to true makes it possible for the child process
+// to continue running after the parent exits. The child will have its own console window.
+// Once enabled for a child process, it cannot be disabled.
+
+// On non-Windows platforms, if options.detached is set to true, the child process will
+// be made the leader of a new process group and session. Note that child processes may
+// continue running after the parent exits regardless of whether they are detached or not.
+
 class ChildProcessManager {
   constructor (args) {
     this.proc = null; // process obj
@@ -25,8 +34,10 @@ class ChildProcessManager {
     this.onStdout = args.onStdout || function (data) { console.log("[D] stdout received", data); };
     this.onStderr = args.onStderr || function (data) { console.log("[D] stderr received", data); };
     this.onDataLine = args.onDataLine || false;
-    this.onClose = args.onClose || function (signal) { console.log('[D]', this.name, 'terminated ', signal) };
+    this.onClose = args.onClose || function (code, signal) { console.log('[D]', this.name, 'terminated ', code) };
     this.processPath = args.processPath;
+    this.detached = args.detached || false;
+    this.procIsRunning = false;
 
     this.name = this.processPath.split('/').pop();
   }
@@ -72,12 +83,10 @@ class ChildProcessManager {
 
     console.log("[D] Starting process ->", this.processPath, procArgs);
 
-    // add handler to close child process upon termination of parent process
-    // Must be added before these other items
-    SignalManagerService.addShutdownHandler(this.shutdownHandler.bind(this));
-
     // Open process
-    var proc = spawn(this.processPath, procArgs);
+    var proc = spawn(this.processPath, procArgs, {detached: this.detached});
+
+    this.procIsRunning = true;
 
     // Data capture
     proc.stdout.on('data', (dataBuffer) => {
@@ -99,13 +108,26 @@ class ChildProcessManager {
       this.onStderr(data);
     });
 
+    // Attach close handler
     proc.on('close', (code, signal) => {
+      this.isProcessRunning = false;
       this.onClose(code, signal);
-      SignalManagerService.removeShutdownHandler(this.shutdownHandler.bind(this));
     });
 
 
     return proc;
+  }
+
+  isProcessRunning () {
+    return this.procIsRunning;
+  }
+
+  killThisProc (callback) {
+    if (this.proc && this.procIsRunning) {
+      return this.killProcById(this.proc.pid, callback);
+    } else {
+      return console.log("[!] ERR trying to kill process that is not running:", this.name);
+    }
   }
 
   /**
@@ -129,13 +151,6 @@ class ChildProcessManager {
       this.proc = this.startProc(procArgs);
 
       return callback();
-    });
-  }
-  shutdownHandler (callback) {
-    return callback(true); // child processes will die automatically
-    console.log("[D] procmanager - closing", this.name);
-    this.killProcByName(this.name, () => {
-      return callback(true);
     });
   }
 };
