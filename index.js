@@ -9,14 +9,6 @@
 var ps = require('ps-node'),
     spawn = require('child_process').spawn;
 
-var DIE = function() {
-    //var red="\u001B[0;31m"; var boldRed="\u001B[1;31m";
-    console.log.apply(console, arguments);
-    console.log("[+] Exiting.");
-    process.exit(0);
-};
-
-
 // https://nodejs.org/api/child_process.html#child_process_options_detached
 // On Windows, setting options.detached to true makes it possible for the child process
 // to continue running after the parent exits. The child will have its own console window.
