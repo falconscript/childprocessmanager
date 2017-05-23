@@ -28,6 +28,15 @@ var lsProc = new childprocessmanager({
   onClose: () => {
     console.log("[D] Process closed.");
   },
+  detached: false, // set to true to let process continue to run if node closes
 });
 
+// Start process with arguments. equal to ls ./directory ../anotherdirectory
+lsProc.startProc([
+  './directory',
+  '../anotherdirectory'
+]);
+
+// Send process data into its stdin with sendDataLine
+lsProc.sendDataLine('../directorythree\n');
 ```
